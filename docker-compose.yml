@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  flask-app:
+    build: .
+    container_name: flask-openai-app
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env   # load environment variables from .env
+    volumes:
+      - .:/app  # optional: makes local changes reflect inside the container
+    command: python app/main.py

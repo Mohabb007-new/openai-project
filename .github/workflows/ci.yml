@@ -1,0 +1,50 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1️⃣ Checkout repository
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    # 2️⃣ Set up Python
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10
+
+    # 3️⃣ Install dependencies
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # 4️⃣ Run unit tests
+    - name: Run tests
+      run: |
+        pytest --maxfail=1 --disable-warnings -v
+
+    # 5️⃣ Build Docker image
+    - name: Build Docker image
+      run: |
+        docker build -t flask-openai-app .
+
+    # 6️⃣ Optional: push to Docker Hub (configure secrets first)
+    # - name: Login to Docker Hub
+    #   uses: docker/login-action@v2
+    #   with:
+    #     username: ${{ secrets.DOCKER_USERNAME }}
+    #     password: ${{ secrets.DOCKER_PASSWORD }}
+
+    # - name: Push Docker image
+    #   run: |
+    #     docker tag flask-openai-app your-dockerhub-username/flask-openai-app:latest
+    #     docker push your-dockerhub-username/flask-openai-app:latest

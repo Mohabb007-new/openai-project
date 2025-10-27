@@ -1,0 +1,79 @@
+openapi: 3.0.3
+info:
+  title: Flask OpenAI API
+  description: API to generate text and images using OpenAI models.
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+
+paths:
+  /generate-text:
+    post:
+      summary: Generate text from a given prompt
+      description: Sends a text prompt to the OpenAI API and returns generated text.
+      tags:
+        - Text
+      parameters:
+        - in: header
+          name: x-api-key
+          schema:
+            type: string
+          required: true
+          description: API key required for authentication.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                  example: "Write a haiku about AI"
+      responses:
+        "200":
+          description: Successfully generated text.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                    example: "AI dreams in code, soft whispers of thought and light."
+
+  /generate-image:
+    post:
+      summary: Generate image from a text description
+      description: Creates an image based on the provided text input using OpenAI's image model.
+      tags:
+        - Image
+      parameters:
+        - in: header
+          name: x-api-key
+          schema:
+            type: string
+          required: true
+          description: API key required for authentication.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                  example: "A futuristic city floating in the clouds"
+      responses:
+        "200":
+          description: Successfully generated image.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  image_base64:
+                    type: string
+                    description: Base64-encoded image
+                    example: "iVBORw0KGgoAAAANSUhEUgAA..."

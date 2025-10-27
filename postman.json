@@ -1,0 +1,93 @@
+{
+  "info": {
+    "name": "Flask OpenAI App",
+    "description": "Collection for testing Flask OpenAI API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "flask-openai-collection"
+  },
+  "item": [
+    {
+      "name": "Home",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-api-key", "value": "my-secret-key" }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": [""]
+        }
+      },
+      "response": [
+        {
+          "name": "Example response",
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"response\": \"Hello, World!\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Chat",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "x-api-key", "value": "my-secret-key" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"What is the capital of Lebanon?\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/chat",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["chat"]
+        }
+      },
+      "response": [
+        {
+          "name": "Example response",
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"response\": \"Beirut\",\n  \"version\": \"0.1.0\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Generate Image",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "x-api-key", "value": "my-secret-key" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "response-type", "value": "base64" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"A red elephant\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/generateImage",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["generateImage"]
+        }
+      },
+      "response": [
+        {
+          "name": "Example response (base64)",
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"base64\": \"iVBORw0KGgoAAAANSUhEUgAA...\",\n  \"version\": \"0.1.0\"\n}"
+        }
+      ]
+    }
+  ]
+}
