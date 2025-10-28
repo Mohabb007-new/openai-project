@@ -1,38 +1,28 @@
 openapi: 3.0.3
 info:
   title: Flask OpenAI API
-  description: API to generate text and images using OpenAI models.
+  description: API to generate text and images using OpenAI models, including RAG and chat memory functionality.
   version: 1.0.0
 servers:
   - url: http://localhost:5000
 
 paths:
-  /generate-text:
-    post:
-      summary: Generate text from a given prompt
-      description: Sends a text prompt to the OpenAI API and returns generated text.
+  /:
+    get:
+      summary: Home
+      description: Returns a simple Hello World message.
       tags:
-        - Text
+        - General
       parameters:
         - in: header
           name: x-api-key
           schema:
             type: string
           required: true
-          description: API key required for authentication.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                prompt:
-                  type: string
-                  example: "Write a haiku about AI"
+          description: API key for authentication
       responses:
         "200":
-          description: Successfully generated text.
+          description: Successful response
           content:
             application/json:
               schema:
@@ -40,12 +30,48 @@ paths:
                 properties:
                   response:
                     type: string
-                    example: "AI dreams in code, soft whispers of thought and light."
+                    example: "Hello, World!"
 
-  /generate-image:
+  /chat:
     post:
-      summary: Generate image from a text description
-      description: Creates an image based on the provided text input using OpenAI's image model.
+      summary: Chat
+      description: Sends a user message to OpenAI and returns the response.
+      tags:
+        - Chat
+      parameters:
+        - in: header
+          name: x-api-key
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: "Hello!"
+      responses:
+        "200":
+          description: Chat response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                  version:
+                    type: string
+                    example: "0.1.0"
+
+  /generateImage:
+    post:
+      summary: Generate Image
+      description: Creates an image based on the provided text input.
       tags:
         - Image
       parameters:
@@ -54,7 +80,13 @@ paths:
           schema:
             type: string
           required: true
-          description: API key required for authentication.
+        - in: header
+          name: response-type
+          schema:
+            type: string
+            enum: [base64, image]
+          required: true
+          description: Format of returned image
       requestBody:
         required: true
         content:
@@ -62,18 +94,128 @@ paths:
             schema:
               type: object
               properties:
-                prompt:
+                content:
                   type: string
-                  example: "A futuristic city floating in the clouds"
+                  example: "A red elephant"
       responses:
         "200":
-          description: Successfully generated image.
+          description: Generated image
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  image_base64:
+                  base64:
                     type: string
-                    description: Base64-encoded image
                     example: "iVBORw0KGgoAAAANSUhEUgAA..."
+                  version:
+                    type: string
+                    example: "0.1.0"
+
+  /upload_docs:
+    post:
+      summary: Upload Documents
+      description: Uploads a list of texts to store in FAISS for RAG retrieval.
+      tags:
+        - RAG
+      parameters:
+        - in: header
+          name: x-api-key
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                texts:
+                  type: array
+                  items:
+                    type: string
+                  example: ["Lebanon is a country.", "Beirut is its capital."]
+      responses:
+        "200":
+          description: Documents stored successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Stored 2 documents."
+
+  /ask_rag:
+    post:
+      summary: Ask RAG
+      description: Query the RAG system using uploaded documents.
+      tags:
+        - RAG
+      parameters:
+        - in: header
+          name: x-api-key
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  example: "What is the capital of Lebanon?"
+      responses:
+        "200":
+          description: Answer from RAG
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                    example: "Beirut"
+
+  /chat_rag_memory:
+    post:
+      summary: Chat with RAG + Memory
+      description: Query RAG using context + memory for multi-turn conversations.
+      tags:
+        - Chat
+        - RAG
+      parameters:
+        - in: header
+          name: x-api-key
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                session_id:
+                  type: string
+                  example: "user123"
+                query:
+                  type: string
+                  example: "What is the capital of Lebanon?"
+      responses:
+        "200":
+          description: Answer from RAG with memory
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                    example: "Beirut"

@@ -88,6 +88,94 @@
           "body": "{\n  \"base64\": \"iVBORw0KGgoAAAANSUhEUgAA...\",\n  \"version\": \"0.1.0\"\n}"
         }
       ]
+    },
+    {
+  "name": "Upload Documents",
+  "request": {
+    "method": "POST",
+    "header": [
+      { "key": "x-api-key", "value": "my-secret-key" },
+      { "key": "Content-Type", "value": "application/json" }
+    ],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n  \"texts\": [\"Lebanon is a country in the Middle East.\", \"Beirut is its capital.\"]\n}"
+    },
+    "url": {
+      "raw": "http://localhost:5000/upload_docs",
+      "protocol": "http",
+      "host": ["localhost"],
+      "port": "5000",
+      "path": ["upload_docs"]
     }
+  },
+  "response": [
+    {
+      "name": "Example response",
+      "status": "OK",
+      "code": 200,
+      "body": "{\n  \"message\": \"Stored 2 documents.\"\n}"
+    }
+  ]
+},
+{
+  "name": "Ask RAG",
+  "request": {
+    "method": "POST",
+    "header": [
+      { "key": "x-api-key", "value": "my-secret-key" },
+      { "key": "Content-Type", "value": "application/json" }
+    ],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n  \"query\": \"What is the capital of Lebanon?\"\n}"
+    },
+    "url": {
+      "raw": "http://localhost:5000/ask_rag",
+      "protocol": "http",
+      "host": ["localhost"],
+      "port": "5000",
+      "path": ["ask_rag"]
+    }
+  },
+  "response": [
+    {
+      "name": "Example response",
+      "status": "OK",
+      "code": 200,
+      "body": "{\n  \"response\": \"Beirut\"\n}"
+    }
+  ]
+},
+{
+  "name": "Chat RAG + Memory",
+  "request": {
+    "method": "POST",
+    "header": [
+      { "key": "x-api-key", "value": "my-secret-key" },
+      { "key": "Content-Type", "value": "application/json" }
+    ],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n  \"session_id\": \"user123\",\n  \"query\": \"What is the capital of Lebanon?\"\n}"
+    },
+    "url": {
+      "raw": "http://localhost:5000/chat_rag_memory",
+      "protocol": "http",
+      "host": ["localhost"],
+      "port": "5000",
+      "path": ["chat_rag_memory"]
+    }
+  },
+  "response": [
+    {
+      "name": "Example response",
+      "status": "OK",
+      "code": 200,
+      "body": "{\n  \"response\": \"Beirut\"\n}"
+    }
+  ]
+}
+
   ]
 }
