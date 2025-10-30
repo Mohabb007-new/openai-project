@@ -39,8 +39,6 @@ def generate_image():
 
 from app.rag_service import add_documents, answer_query, answer_with_memory_and_rag
 
-api_blueprint = Blueprint("api", __name__)
-
 @api_blueprint.route("/upload_docs", methods=["POST"])
 def upload_docs():
     """
