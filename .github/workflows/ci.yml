@@ -10,6 +10,9 @@ jobs:
   test-and-build:
     runs-on: ubuntu-latest
 
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      API_KEY: my-secret-key  # add this too if needed by your app
     steps:
     # 1️⃣ Checkout repository
     - name: Checkout repo
@@ -37,14 +40,19 @@ jobs:
       run: |
         docker build -t flask-openai-app .
 
-    # 6️⃣ Optional: push to Docker Hub (configure secrets first)
-    # - name: Login to Docker Hub
-    #   uses: docker/login-action@v2
-    #   with:
-    #     username: ${{ secrets.DOCKER_USERNAME }}
-    #     password: ${{ secrets.DOCKER_PASSWORD }}
+    # 6️⃣ Build and push Docker image
+    - name: Build Docker image
+      run: docker build -t flask-openai-app .
 
-    # - name: Push Docker image
-    #   run: |
-    #     docker tag flask-openai-app your-dockerhub-username/flask-openai-app:latest
-    #     docker push your-dockerhub-username/flask-openai-app:latest
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Push Docker image
+      run: |
+        docker tag flask-openai-app ${{ secrets.DOCKER_USERNAME }}/flask-openai-app:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/flask-openai-app:latest
+
