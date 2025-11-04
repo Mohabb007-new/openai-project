@@ -10,4 +10,5 @@ services:
       - .env   # load environment variables from .env
     volumes:
       - .:/app  # optional: makes local changes reflect inside the container
-    command: python app/main.py
+    working_dir: /app
+    command: python -m app.main

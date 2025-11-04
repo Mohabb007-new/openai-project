@@ -10,14 +10,17 @@ def get_chat_response(prompt):
     )
     return response.choices[0].message.content
 
+import base64
+
 def get_image_response(prompt, response_type):
+    # Generate image with OpenAI
     response = openai.images.generate(model="gpt-image-1", prompt=prompt)
     image_base64 = response.data[0].b64_json
 
-    if response_type == "base64":
+    if response_type.lower() == "base64":
+        # Return base64 string in JSON
         return {"base64": image_base64, "version": "0.1.0"}
-    else:
-        filename = "image.png"
-        with open(filename, "wb") as f:
-            f.write(image_base64.encode())
-        return {"image": filename, "version": "0.1.0"}
+    elif response_type.lower() == "image":
+        # Return raw bytes for Flask send_file
+        return base64.b64decode(image_base64)
+

@@ -67,7 +67,26 @@ paths:
                   version:
                     type: string
                     example: "0.1.0"
-
+        "400":
+          description: Bad request — missing or invalid content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing or empty 'content' field"
+        "401":
+          description: Unauthorized — missing or invalid API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized: Missing or invalid API key"
   /generateImage:
     post:
       summary: Generate Image

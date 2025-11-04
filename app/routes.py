@@ -1,18 +1,39 @@
 from flask import Blueprint, jsonify, request
 from app.openai_service import get_chat_response, get_image_response
 from flask import current_app as app
+from flask import send_file
+import io
+from functools import wraps
 
 api_blueprint = Blueprint('api', __name__)
 
 # --- Authentication Decorator ---
 def require_api_key(f):
+    @wraps(f)
     def wrapper(*args, **kwargs):
         key = request.headers.get("x-api-key")
         if key != app.config["API_KEY"]:
             return jsonify({"error": "Invalid API key"}), 401
         return f(*args, **kwargs)
-    wrapper.__name__ = f.__name__
     return wrapper
+
+def require_content(field_name):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            data = request.get_json(silent=True)
+            if not data:
+                return jsonify({"error": "Invalid JSON payload"}), 400
+            
+            value = data.get(field_name)
+            if not value or not isinstance(value, str) or not value.strip():
+                return jsonify({"error": f"Missing or empty '{field_name}' field"}), 400
+            
+            kwargs[field_name] = value
+            return f(*args, **kwargs)
+        return wrapper
+    return decorator
+
 
 # --- Routes ---
 @api_blueprint.route("/", methods=["GET"])
@@ -22,6 +43,7 @@ def home():
 
 @api_blueprint.route("/chat", methods=["POST"])
 @require_api_key
+@require_content("content")
 def chat():
     data = request.get_json()
     content = data.get("content")
@@ -30,16 +52,32 @@ def chat():
 
 @api_blueprint.route("/generateImage", methods=["POST"])
 @require_api_key
+@require_content("content")
 def generate_image():
     data = request.get_json()
     response_type = request.headers.get("response-type", "base64")
     content = data.get("content")
+
     result = get_image_response(content, response_type)
-    return jsonify(result)
+
+    if response_type.lower() == "base64":
+        # Return JSON with base64
+        return result
+    elif response_type.lower() == "image":
+        # Stream the image bytes to the client as PNG
+        return send_file(
+            io.BytesIO(result),
+            mimetype="image/png",
+            as_attachment=True,
+            download_name="generated.png"
+        )
+    else:
+        return {"error": "Invalid response-type header, must be 'base64' or 'image'"}, 402
 
 from app.rag_service import add_documents, answer_query, answer_with_memory_and_rag
 
 @api_blueprint.route("/upload_docs", methods=["POST"])
+@require_content("texts")
 def upload_docs():
     """
     Uploads a list of texts to store in FAISS.
@@ -56,6 +94,7 @@ def upload_docs():
     return jsonify({"message": f"Stored {len(texts)} documents."})
 
 @api_blueprint.route("/ask_rag", methods=["POST"])
+@require_content("query")
 def ask_rag():
     """
     Ask a question using RAG.
