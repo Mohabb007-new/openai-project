@@ -1,3 +1,5 @@
+import os
+#os.environ["FORCE_FAKE_OPENAI"] = "1"
 from app import create_app
 
 # Create a test version of your app
@@ -77,12 +79,74 @@ def test_generate_image_invalid_type():
     assert "error" in json_data
     assert "Invalid response-type" in json_data["error"]
 
+def test_generate_image_missing_content():
+    """Missing 'content' key should return 400"""
+    data = {}  # no content
+    headers = {"x-api-key": "my-secret-key", "response-type": "base64"}
+    response = client.post("/generateImage", json=data, headers=headers)
+
+    assert response.status_code == 400
+    json_data = response.get_json()
+    assert "error" in json_data
+
+
+def test_generate_image_empty_content():
+    """Empty 'content' should return 400"""
+    data = {"content": ""}
+    headers = {"x-api-key": "my-secret-key", "response-type": "image"}
+    response = client.post("/generateImage", json=data, headers=headers)
+
+    assert response.status_code == 400
+    json_data = response.get_json()
+    assert "error" in json_data
+
+
+def test_generate_image_missing_api_key():
+    """Requests without the API key should be rejected with 401"""
+    data = {"content": "A red elephant"}
+    headers = {"response-type": "base64"}  # no x-api-key
+    response = client.post("/generateImage", json=data, headers=headers)
+
+    assert response.status_code == 401
+    json_data = response.get_json()
+    assert "error" in json_data
+
 # --- Test POST /upload_docs endpoint ---
 def test_upload_docs():
     data = {"texts": ["Lebanon is a country.", "Beirut is its capital."]}
     response = client.post("/upload_docs", json=data, headers={"x-api-key": "my-secret-key"})
     assert response.status_code == 200
     assert "Stored" in response.json["message"]
+
+
+def test_upload_docs_missing_texts():
+    """Missing 'texts' key should return 400"""
+    data = {}
+    response = client.post("/upload_docs", json=data, headers={"x-api-key": "my-secret-key"})
+
+    assert response.status_code == 400
+    json_data = response.get_json()
+    assert "error" in json_data
+
+
+def test_upload_docs_empty_texts():
+    """Empty list for 'texts' should return 400"""
+    data = {"texts": []}
+    response = client.post("/upload_docs", json=data, headers={"x-api-key": "my-secret-key"})
+
+    assert response.status_code == 400
+    json_data = response.get_json()
+    assert "error" in json_data
+
+
+def test_upload_docs_texts_wrong_type():
+    """Wrong type for 'texts' should return 400"""
+    data = {"texts": "not-a-list"}
+    response = client.post("/upload_docs", json=data, headers={"x-api-key": "my-secret-key"})
+
+    assert response.status_code == 400
+    json_data = response.get_json()
+    assert "error" in json_data
 
 # --- Test POST /ask_rag endpoint ---
 def test_ask_rag():
@@ -94,6 +158,26 @@ def test_ask_rag():
     response = client.post("/ask_rag", json=data, headers={"x-api-key": "my-secret-key"})
     assert response.status_code == 200
     assert "response" in response.json
+
+
+def test_ask_rag_missing_query():
+    """Missing 'query' should return 400"""
+    data = {}
+    response = client.post("/ask_rag", json=data, headers={"x-api-key": "my-secret-key"})
+
+    assert response.status_code == 400
+    json_data = response.get_json()
+    assert "error" in json_data
+
+
+def test_ask_rag_empty_query():
+    """Empty 'query' should return 400"""
+    data = {"query": ""}
+    response = client.post("/ask_rag", json=data, headers={"x-api-key": "my-secret-key"})
+
+    assert response.status_code == 400
+    json_data = response.get_json()
+    assert "error" in json_data
 
 # --- Test POST /chat_rag_memory endpoint ---
 def test_chat_rag_memory():
@@ -113,3 +197,43 @@ def test_chat_rag_memory():
     response2 = client.post("/chat_rag_memory", json=data2, headers={"x-api-key": "my-secret-key"})
     assert response2.status_code == 200
     assert "response" in response2.json
+
+
+def test_chat_rag_memory_missing_query():
+    """Missing 'query' should return 400"""
+    data = {"session_id": "test_user"}
+    response = client.post("/chat_rag_memory", json=data, headers={"x-api-key": "my-secret-key"})
+
+    assert response.status_code == 400
+    json_data = response.get_json()
+    assert "error" in json_data
+
+
+def test_chat_rag_memory_empty_query():
+    """Empty 'query' should return 400"""
+    data = {"session_id": "test_user", "query": ""}
+    response = client.post("/chat_rag_memory", json=data, headers={"x-api-key": "my-secret-key"})
+
+    assert response.status_code == 400
+    json_data = response.get_json()
+    assert "error" in json_data
+
+
+def test_chat_rag_memory_missing_api_key():
+    """Requests without API key should be rejected with 401"""
+    data = {"session_id": "test_user", "query": "Hello"}
+    response = client.post("/chat_rag_memory", json=data)  # no header
+
+    assert response.status_code == 401
+    json_data = response.get_json()
+    assert "error" in json_data
+
+
+def test_chat_rag_memory_missing_session_id_defaults():
+    """If session_id is missing the endpoint should still work (uses default)"""
+    data = {"query": "Tell me about Lebanon"}
+    response = client.post("/chat_rag_memory", json=data, headers={"x-api-key": "my-secret-key"})
+
+    assert response.status_code == 200
+    json_data = response.get_json()
+    assert "response" in json_data

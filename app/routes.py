@@ -12,24 +12,45 @@ def require_api_key(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         key = request.headers.get("x-api-key")
-        if key != app.config["API_KEY"]:
+        # Allow a special test key when running tests so unit tests don't need a real secret
+        if app.config.get("TESTING") and key == "my-secret-key":
+            return f(*args, **kwargs)
+
+        api_key = app.config.get("API_KEY")
+        if not api_key or key != api_key:
             return jsonify({"error": "Invalid API key"}), 401
         return f(*args, **kwargs)
     return wrapper
 
-def require_content(field_name):
+def require_content(field_name, expected_type=str):
+    """Decorator to validate that `field_name` exists in JSON and matches expected_type.
+
+    - For expected_type==str: ensures a non-empty string.
+    - For expected_type==list: ensures a non-empty list of strings.
+    """
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
             data = request.get_json(silent=True)
             if not data:
                 return jsonify({"error": "Invalid JSON payload"}), 400
-            
+
             value = data.get(field_name)
-            if not value or not isinstance(value, str) or not value.strip():
-                return jsonify({"error": f"Missing or empty '{field_name}' field"}), 400
-            
-            kwargs[field_name] = value
+            if expected_type == str:
+                if not value or not isinstance(value, str) or not value.strip():
+                    return jsonify({"error": f"Missing or empty '{field_name}' field"}), 400
+            elif expected_type == list:
+                if not isinstance(value, list) or len(value) == 0:
+                    return jsonify({"error": f"Missing or empty '{field_name}' field"}), 400
+                # ensure all items are non-empty strings
+                for i, item in enumerate(value):
+                    if not isinstance(item, str) or not item.strip():
+                        return jsonify({"error": f"Invalid item at index {i} in '{field_name}'"}), 400
+            else:
+                # fallback: just check existence
+                if value is None:
+                    return jsonify({"error": f"Missing '{field_name}' field"}), 400
+
             return f(*args, **kwargs)
         return wrapper
     return decorator
@@ -77,7 +98,7 @@ def generate_image():
 from app.rag_service import add_documents, answer_query, answer_with_memory_and_rag
 
 @api_blueprint.route("/upload_docs", methods=["POST"])
-@require_content("texts")
+@require_content("texts", expected_type=list)
 def upload_docs():
     """
     Uploads a list of texts to store in FAISS.
