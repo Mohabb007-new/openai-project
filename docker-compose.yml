@@ -2,13 +2,26 @@ version: "3.9"
 
 services:
   flask-app:
-    build: .
+    build: ./backend
     container_name: flask-openai-app
     ports:
       - "5000:5000"
     env_file:
-      - .env   # load environment variables from .env
+      - .env   # create this file
     volumes:
-      - .:/app  # optional: makes local changes reflect inside the container
+      - ./backend:/app   # mount backend folder only
     working_dir: /app
-    command: python -m app.main
+    command: python -m app.main  # or python app/main.py if preferred
+  frontend:
+    build: ./frontend      # path to your frontend folder
+    container_name: frontend-app
+    ports:
+      - "3010:3010"
+    depends_on:
+      - flask-app           # ensure backend starts first
+    environment:
+      - API_KEY=my-secret-key
+      - BACKEND_URL=http://flask-app:5000  # use Docker service name
+    volumes:
+      - ./frontend:/app
+

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flask Frontend</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h1>Flask Frontend</h1>
+
+    <!-- Chat -->
+    <form action="/chat" method="POST">
+        <h2>Chat</h2>
+        <input type="text" name="content" placeholder="Enter your question" required>
+        <button type="submit">Send</button>
+    </form>
+
+    <!-- Generate Image -->
+    <form action="/generateImage" method="POST">
+        <h2>Generate Image</h2>
+        <input type="text" name="content" placeholder="Image prompt" required>
+        <button type="submit">Generate</button>
+    </form>
+
+    <!-- Upload Documents -->
+    <form action="/upload_docs" method="POST">
+        <h2>Upload Documents</h2>
+        <textarea name="texts" placeholder="Enter texts, one per line" rows="4"></textarea>
+        <button type="submit">Upload</button>
+    </form>
+
+    <!-- Ask RAG -->
+    <form action="/ask_rag" method="POST">
+        <h2>Ask RAG</h2>
+        <input type="text" name="query" placeholder="Enter your question" required>
+        <button type="submit">Ask</button>
+    </form>
+
+    <!-- Chat with RAG + Memory -->
+    <form action="/chat_rag_memory" method="POST">
+        <h2>Chat with RAG + Memory</h2>
+        <input type="text" name="session_id" placeholder="Session ID (optional)">
+        <input type="text" name="query" placeholder="Enter your question" required>
+        <button type="submit">Send</button>
+    </form>
+
+    <% if (message) { %>
+        <p><%= message %></p>
+    <% } %>
+
+</body>
+</html>
