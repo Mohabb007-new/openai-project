@@ -4,7 +4,7 @@ A lightweight, modular AI backend built with **Flask**, featuring:
 - 🔹 Image generation
 - 🔹 RAG (Retrieval-Augmented Generation) using FAISS
 - 🔹 Conversational memory
-- 🔹 Simple Express (Node.js) frontend
+- 🔹 Simple Express (Node.js) frontend server
 - 🔹 Docker support
 - 🔹 API documentation via swagger.yaml
 - 🔹 Postman collection (postman.json) for easy testing
